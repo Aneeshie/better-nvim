@@ -32,8 +32,10 @@ require("lazy").setup({
         'nvim-treesitter/nvim-treesitter',
         build = ':TSUpdate'
     },
-    
-    'nvim-treesitter/playground',
+    {
+        'nvim-treesitter/nvim-treesitter-context',
+        dependencies = { 'nvim-treesitter/nvim-treesitter' }
+    },
     {
         'ThePrimeagen/harpoon',
         branch = 'harpoon2',
@@ -61,6 +63,7 @@ require("lazy").setup({
 
             -- Snippets
             'L3MON4D3/LuaSnip',
+            'saadparwaiz1/cmp_luasnip',
             'rafamadriz/friendly-snippets',
         }
     }

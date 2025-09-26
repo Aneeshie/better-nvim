@@ -1,15 +1,31 @@
-local status, lsp = pcall(require, "lsp-zero")
-if not status then
-    return
-end
+local lsp_zero = require('lsp-zero')
 
-lsp.extend_lspconfig()
+-- lsp_zero.extend_lspconfig()
 
-lsp.on_attach(function(client, bufnr)
+-- Configure Mason
+local mason = require('mason')
+mason.setup({})
+
+local mason_lspconfig = require('mason-lspconfig')
+mason_lspconfig.setup({
+  ensure_installed = {'ts_ls', 'rust_analyzer', 'lua_ls', 'pyright'},
+  handlers = {
+    -- this is the "default handler"
+    -- it applies to every language server without a "custom handler"
+    function(server_name)
+      require('lspconfig')[server_name].setup({})
+    end,
+  }
+})
+
+-- LSP attach function
+lsp_zero.on_attach(function(client, bufnr)
   local opts = {buffer = bufnr, remap = false}
 
   vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
+  vim.keymap.set("n", "gD", function() vim.lsp.buf.declaration() end, opts)
   vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
+  vim.keymap.set("n", "gi", function() vim.lsp.buf.implementation() end, opts)
   vim.keymap.set("n", "<leader>vws", function() vim.lsp.buf.workspace_symbol() end, opts)
   vim.keymap.set("n", "<leader>vd", function() vim.diagnostic.open_float() end, opts)
   vim.keymap.set("n", "[d", function() vim.diagnostic.goto_next() end, opts)
@@ -18,37 +34,78 @@ lsp.on_attach(function(client, bufnr)
   vim.keymap.set("n", "<leader>vrr", function() vim.lsp.buf.references() end, opts)
   vim.keymap.set("n", "<leader>vrn", function() vim.lsp.buf.rename() end, opts)
   vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
+  vim.keymap.set("n", "<leader>vh", function() vim.lsp.buf.signature_help() end, opts)
 end)
 
--- Setup Mason
-local mason_status, mason = pcall(require, 'mason')
-if mason_status then
-    mason.setup({})
-end
-
-local mason_lspconfig_status, mason_lspconfig = pcall(require, 'mason-lspconfig')
-if mason_lspconfig_status then
-    mason_lspconfig.setup({
-        ensure_installed = {'ts_ls', 'rust_analyzer'},
-        handlers = {
-            lsp.default_setup,
-        }
-    })
-end
-
 -- Setup completion
-local cmp_status, cmp = pcall(require, 'cmp')
-if not cmp_status then
-    return
-end
+local cmp = require('cmp')
+local luasnip = require('luasnip')
+
+-- Load friendly-snippets
+require('luasnip.loaders.from_vscode').lazy_load()
 
 local cmp_select = {behavior = cmp.SelectBehavior.Select}
 
 cmp.setup({
+  snippet = {
+    expand = function(args)
+      luasnip.lsp_expand(args.body)
+    end,
+  },
+  sources = {
+    {name = 'nvim_lsp'},
+    {name = 'luasnip'},
+    {name = 'buffer'},
+    {name = 'path'},
+    {name = 'nvim_lua'},
+  },
   mapping = cmp.mapping.preset.insert({
     ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
     ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
     ['<C-y>'] = cmp.mapping.confirm({ select = true }),
     ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-d>'] = cmp.mapping.scroll_docs(4),
+    ['<C-e>'] = cmp.mapping.abort(),
+    ['<CR>'] = cmp.mapping.confirm({
+      behavior = cmp.ConfirmBehavior.Replace,
+      select = true,
+    }),
+    ['<Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_next_item()
+      elseif luasnip.expand_or_jumpable() then
+        luasnip.expand_or_jump()
+      else
+        fallback()
+      end
+    end, { 'i', 's' }),
+    ['<S-Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item()
+      elseif luasnip.jumpable(-1) then
+        luasnip.jump(-1)
+      else
+        fallback()
+      end
+    end, { 'i', 's' }),
   }),
+  window = {
+    completion = cmp.config.window.bordered(),
+    documentation = cmp.config.window.bordered(),
+  },
+  formatting = {
+    fields = {'menu', 'abbr', 'kind'},
+    format = function(entry, item)
+      local menu_icon = {
+        nvim_lsp = 'λ',
+        luasnip = '⋗',
+        buffer = 'Ω',
+        path = '🖫',
+        nvim_lua = 'Π',
+      }
+      item.menu = menu_icon[entry.source.name]
+      return item
+    end,
+  },
 })
