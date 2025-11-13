@@ -30,7 +30,25 @@ require("lazy").setup({
 
     {
         'nvim-treesitter/nvim-treesitter',
-        build = ':TSUpdate'
+        build = ':TSUpdate',
+        event = { 'BufReadPost', 'BufNewFile' },
+        dependencies = { 'windwp/nvim-ts-autotag' },
+        config = function()
+            local ok, ts_configs = pcall(require, 'nvim-treesitter.configs')
+            if not ok then
+                -- Treesitter not installed yet; avoid startup error. Run :Lazy sync and restart.
+                return
+            end
+            ts_configs.setup({
+                ensure_installed = {
+                    'html', 'tsx', 'javascript', 'typescript', 'css',
+                    'lua', 'json', 'vim', 'markdown', 'markdown_inline'
+                },
+                highlight = { enable = true },
+                indent = { enable = true },
+                autotag = { enable = true },
+            })
+        end,
     },
     {
         'nvim-treesitter/nvim-treesitter-context',

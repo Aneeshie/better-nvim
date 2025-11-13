@@ -43,6 +43,19 @@ vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
 
 vim.keymap.set("n", "<leader>vpp", "<cmd>e ~/.config/nvim/lua/theprimeagen/lazy.lua<CR>");
 
-vim.keymap.set("n", "<leader><leader>", function()
-    vim.cmd("so")
-end)
+-- Telescope bindings (replaces old <leader><leader> mapping)
+local ok_telescope, telescope_builtin = pcall(require, 'telescope.builtin')
+if ok_telescope then
+    vim.keymap.set('n', '<leader><leader>', telescope_builtin.find_files, { desc = 'Find files' })
+    vim.keymap.set('n', '<leader>ff', telescope_builtin.find_files, { desc = 'Find files' })
+    vim.keymap.set('n', '<leader>fg', telescope_builtin.live_grep, { desc = 'Live grep' })
+    vim.keymap.set('n', '<leader>fb', telescope_builtin.buffers, { desc = 'Buffers' })
+    vim.keymap.set('n', '<leader>fh', telescope_builtin.help_tags, { desc = 'Help tags' })
+    vim.keymap.set('n', '<leader>sd', telescope_builtin.diagnostics, { desc = 'Workspace diagnostics' })
+end
+
+-- Diagnostics helpers
+vim.keymap.set('n', 'gl', vim.diagnostic.open_float, { desc = 'Line diagnostics' })
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Prev diagnostic' })
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Next diagnostic' })
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Line diagnostics' })
