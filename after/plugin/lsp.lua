@@ -53,11 +53,11 @@ cmp.setup({
     end,
   },
   sources = {
-    {name = 'nvim_lsp'},
-    {name = 'luasnip'},
-    {name = 'buffer'},
-    {name = 'path'},
-    {name = 'nvim_lua'},
+    {name = 'nvim_lsp', max_item_count = 10},
+    {name = 'luasnip', max_item_count = 5},
+    {name = 'buffer', max_item_count = 5},
+    {name = 'path', max_item_count = 5},
+    {name = 'nvim_lua', max_item_count = 5},
   },
   mapping = cmp.mapping.preset.insert({
     ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
@@ -91,20 +91,31 @@ cmp.setup({
     end, { 'i', 's' }),
   }),
   window = {
-    completion = cmp.config.window.bordered(),
-    documentation = cmp.config.window.bordered(),
+    completion = cmp.config.window.bordered({
+      max_height = 15,
+      max_width = 60,
+    }),
+    documentation = cmp.config.window.bordered({
+      max_height = 15,
+      max_width = 80,
+    }),
   },
   formatting = {
-    fields = {'menu', 'abbr', 'kind'},
+    fields = {'abbr', 'kind', 'menu'},
     format = function(entry, item)
       local menu_icon = {
-        nvim_lsp = 'λ',
-        luasnip = '⋗',
-        buffer = 'Ω',
-        path = '🖫',
-        nvim_lua = 'Π',
+        nvim_lsp = '[LSP]',
+        luasnip = '[Snip]',
+        buffer = '[Buf]',
+        path = '[Path]',
+        nvim_lua = '[Lua]',
       }
       item.menu = menu_icon[entry.source.name]
+      -- Truncate long items
+      local max_width = 50
+      if #item.abbr > max_width then
+        item.abbr = string.sub(item.abbr, 1, max_width - 1) .. '…'
+      end
       return item
     end,
   },

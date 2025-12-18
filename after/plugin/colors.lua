@@ -1,5 +1,7 @@
 function ColorMyPencils(color) 
-	color = color or "rose-pine"
+	color = color or "mars"
+	
+	vim.o.background = "dark"
 	
 	-- Try to set the colorscheme, fallback to default if it fails
 	local status, _ = pcall(vim.cmd.colorscheme, color)

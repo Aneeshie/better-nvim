@@ -15,17 +15,32 @@ vim.opt.rtp:prepend(lazypath)
 -- Configure lazy.nvim
 require("lazy").setup({
     {
-        'nvim-telescope/telescope.nvim', 
-        tag = '0.1.1',
-        dependencies = { 'nvim-lua/plenary.nvim' }
+        'nvim-telescope/telescope.nvim',
+        branch = '0.1.x',
+        dependencies = { 'nvim-lua/plenary.nvim' },
+        lazy = false,
     },
 
     {
         'rose-pine/neovim',
         name = 'rose-pine',
+    },
+
+    {
+        'sainnhe/gruvbox-material',
+        lazy = false,
+        priority = 1000,
         config = function()
-            vim.cmd('colorscheme rose-pine')
+            vim.g.gruvbox_material_background = 'hard'
+            vim.g.gruvbox_material_better_performance = 1
         end
+    },
+
+    {
+        'steve-lohmeyer/mars.nvim',
+        name = 'mars',
+        lazy = false,
+        priority = 1000,
     },
 
     {
